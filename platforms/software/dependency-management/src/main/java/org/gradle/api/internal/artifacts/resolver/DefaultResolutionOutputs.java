@@ -28,7 +28,6 @@ import org.gradle.api.internal.artifacts.configurations.ArtifactCollectionIntern
 import org.gradle.api.internal.artifacts.configurations.DefaultArtifactCollection;
 import org.gradle.api.internal.artifacts.configurations.ResolutionBackedFileCollection;
 import org.gradle.api.internal.artifacts.configurations.ResolutionResultProvider;
-import org.gradle.api.internal.artifacts.configurations.ResolutionResultProviderBackedSelectedArtifactSet;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.ArtifactSelectionSpec;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.SelectedArtifactSet;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.results.VisitedGraphResults;
@@ -194,9 +193,7 @@ public class DefaultResolutionOutputs implements ResolutionOutputsInternal {
         @Override
         public ResolutionBackedFileCollection getFiles() {
             return new ResolutionBackedFileCollection(
-                new ResolutionResultProviderBackedSelectedArtifactSet(
-                    resolutionAccess.getResults().map(this::selectArtifacts)
-                ),
+                resolutionAccess.getResults().map(this::selectArtifacts),
                 lenient,
                 resolutionAccess.getHost(),
                 taskDependencyFactory

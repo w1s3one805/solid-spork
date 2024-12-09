@@ -16,128 +16,101 @@
 
 package org.gradle.process.internal;
 
+import org.gradle.initialization.BuildCancellationToken;
+import org.gradle.initialization.DefaultBuildCancellationToken;
+import org.gradle.internal.file.PathToFileResolver;
 import org.gradle.process.CommandLineArgumentProvider;
-import org.gradle.process.ProcessForkOptions;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
- * Deprecated. Use {@link ClientExecHandleBuilder} instead. Kept for now since it's used by the Kotlin plugin.
- *
- * Can be merged with {@link ClientExecHandleBuilder} in Gradle 9.0.
+ * Use {@link ExecHandleFactory} instead.
  */
-@SuppressWarnings("DeprecatedIsStillUsed")
-@Deprecated
 public class DefaultExecHandleBuilder extends AbstractExecHandleBuilder implements ExecHandleBuilder, ProcessArgumentsSpec.HasExecutable {
 
-    public DefaultExecHandleBuilder(ClientExecHandleBuilder delegate) {
-        super(delegate);
+    private final ProcessArgumentsSpec argumentsSpec = new ProcessArgumentsSpec(this);
+
+    public DefaultExecHandleBuilder(PathToFileResolver fileResolver, Executor executor) {
+        this(fileResolver, executor, new DefaultBuildCancellationToken());
     }
 
-    @Override
-    public String getExecutable() {
-        return delegate.getExecutable();
-    }
-
-    @Override
-    public void setExecutable(String executable) {
-        delegate.setExecutable(executable);
-    }
-
-    @Override
-    public void setExecutable(Object executable) {
-        delegate.setExecutable(executable);
+    public DefaultExecHandleBuilder(PathToFileResolver fileResolver, Executor executor, BuildCancellationToken buildCancellationToken) {
+        super(fileResolver, executor, buildCancellationToken);
     }
 
     @Override
     public DefaultExecHandleBuilder executable(Object executable) {
-        delegate.setExecutable(executable);
+        super.executable(executable);
         return this;
     }
 
     @Override
-    public File getWorkingDir() {
-        return delegate.getWorkingDir();
-    }
-
-    @Override
-    public void setWorkingDir(File dir) {
-        delegate.setWorkingDir(dir);
-    }
-
-    @Override
-    public void setWorkingDir(Object dir) {
-        delegate.setWorkingDir(dir);
-    }
-
-    @Override
     public DefaultExecHandleBuilder commandLine(Object... arguments) {
-        delegate.commandLine(arguments);
+        argumentsSpec.commandLine(arguments);
         return this;
     }
 
     @Override
     public DefaultExecHandleBuilder commandLine(Iterable<?> args) {
-        delegate.commandLine(args);
+        argumentsSpec.commandLine(args);
         return this;
     }
 
     @Override
     public void setCommandLine(List<String> args) {
-        delegate.commandLine(args);
+        argumentsSpec.commandLine(args);
     }
 
     @Override
     public void setCommandLine(Object... args) {
-        delegate.commandLine(args);
+        argumentsSpec.commandLine(args);
     }
 
     @Override
     public void setCommandLine(Iterable<?> args) {
-        delegate.commandLine(args);
+        argumentsSpec.commandLine(args);
     }
 
     @Override
     public DefaultExecHandleBuilder args(Object... args) {
-        delegate.args(args);
+        argumentsSpec.args(args);
         return this;
     }
 
     @Override
     public DefaultExecHandleBuilder args(Iterable<?> args) {
-        delegate.args(args);
+        argumentsSpec.args(args);
         return this;
     }
 
     @Override
     public DefaultExecHandleBuilder setArgs(List<String> arguments) {
-        delegate.setArgs(arguments);
+        argumentsSpec.setArgs(arguments);
         return this;
     }
 
     @Override
     public DefaultExecHandleBuilder setArgs(Iterable<?> arguments) {
-        delegate.setArgs(arguments);
+        argumentsSpec.setArgs(arguments);
         return this;
     }
 
     @Override
     public List<String> getArgs() {
-        return delegate.getArgs();
+        return argumentsSpec.getArgs();
     }
 
     @Override
     public List<CommandLineArgumentProvider> getArgumentProviders() {
-        return delegate.getArgumentProviders();
+        return argumentsSpec.getArgumentProviders();
     }
 
     @Override
     public List<String> getAllArguments() {
-        return delegate.getAllArguments();
+        return argumentsSpec.getAllArguments();
     }
 
     @Override
@@ -148,29 +121,7 @@ public class DefaultExecHandleBuilder extends AbstractExecHandleBuilder implemen
 
     @Override
     public DefaultExecHandleBuilder workingDir(Object dir) {
-        delegate.setWorkingDir(dir);
-        return this;
-    }
-
-    @Override
-    public Map<String, Object> getEnvironment() {
-        return delegate.getEnvironment();
-    }
-
-    @Override
-    public void setEnvironment(Map<String, ?> environmentVariables) {
-        delegate.setEnvironment(environmentVariables);
-    }
-
-    @Override
-    public ProcessForkOptions environment(Map<String, ?> environmentVariables) {
-        delegate.environment(environmentVariables);
-        return this;
-    }
-
-    @Override
-    public ProcessForkOptions environment(String name, Object value) {
-        delegate.environment(name, value);
+        super.workingDir(dir);
         return this;
     }
 
@@ -218,13 +169,7 @@ public class DefaultExecHandleBuilder extends AbstractExecHandleBuilder implemen
 
     @Override
     public ExecHandleBuilder setDaemon(boolean daemon) {
-        delegate.setDaemon(daemon);
-        return this;
-    }
-
-    @Override
-    public ProcessForkOptions copyTo(ProcessForkOptions options) {
-        delegate.copyTo(options);
+        super.daemon = daemon;
         return this;
     }
 }

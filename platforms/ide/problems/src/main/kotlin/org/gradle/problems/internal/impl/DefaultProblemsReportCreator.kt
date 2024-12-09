@@ -20,14 +20,11 @@ import org.gradle.api.internal.StartParameterInternal
 import org.gradle.api.internal.file.temp.TemporaryFileProvider
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.api.problems.ProblemId
 import org.gradle.api.problems.internal.DefaultProblemGroup
 import org.gradle.api.problems.internal.FileLocation
 import org.gradle.api.problems.internal.LineInFileLocation
 import org.gradle.api.problems.internal.PluginIdLocation
 import org.gradle.api.problems.internal.Problem
-import org.gradle.api.problems.internal.ProblemReportCreator
-import org.gradle.api.problems.internal.ProblemSummaryData
 import org.gradle.api.problems.internal.TaskPathLocation
 import org.gradle.internal.buildoption.InternalOptions
 import org.gradle.internal.cc.impl.problems.BuildNameProvider
@@ -40,7 +37,10 @@ import org.gradle.internal.configuration.problems.StructuredMessage
 import org.gradle.internal.configuration.problems.writeError
 import org.gradle.internal.configuration.problems.writeStructuredMessage
 import org.gradle.internal.logging.ConsoleRenderer
+import org.gradle.internal.operations.OperationIdentifier
 import org.gradle.internal.problems.failure.FailureFactory
+import org.gradle.problems.buildtree.ProblemReporter
+import org.gradle.problems.internal.ProblemReportCreator
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -61,7 +61,11 @@ class DefaultProblemsReportCreator(
 
     private val failureDecorator = FailureDecorator()
 
-    override fun createReportFile(reportDir: File, problemSummaries: MutableList<ProblemSummaryData>) {
+    override fun getId(): String {
+        return "DefaultProblemsReportCreator"
+    }
+
+    override fun report(reportDir: File, validationFailures: ProblemReporter.ProblemConsumer) {
         report.writeReportFileTo(reportDir.resolve("reports/problems"), object : JsonSource {
             override fun writeToJson(jsonWriter: JsonWriter) {
                 with(jsonWriter) {
@@ -72,14 +76,6 @@ class DefaultProblemsReportCreator(
                             property("requestedTasks", taskNames.joinToString(" "))
                             property("documentationLink", DocumentationRegistry().getDocumentationFor("problems-report"))
                             property("documentationLinkCaption", "Problem report")
-                            property("summaries") {
-                                jsonList(problemSummaries) {
-                                    jsonObject {
-                                        problemId(it.problemId)
-                                        property("count", it.count)
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -90,19 +86,9 @@ class DefaultProblemsReportCreator(
         }
     }
 
-    override fun addProblem(problem: Problem) {
+    override fun emit(problem: Problem, id: OperationIdentifier?) {
         problemCount.incrementAndGet()
         report.onProblem(JsonProblemWriter(problem, failureDecorator, failureFactory))
-    }
-}
-
-fun JsonWriter.problemId(id: ProblemId) {
-    property("problemId") {
-        val list = generateSequence(id.group) { it.parent }.toList() + listOf(DefaultProblemGroup(id.name, id.displayName))
-        jsonObjectList(list) { group ->
-            property("name", group.name)
-            property("displayName", group.displayName)
-        }
     }
 }
 
@@ -110,7 +96,7 @@ class JsonProblemWriter(private val problem: Problem, private val failureDecorat
     override fun writeToJson(jsonWriter: JsonWriter) {
         with(jsonWriter) {
             jsonObject {
-                val fileLocations = problem.originLocations
+                val fileLocations = problem.locations
                 if (fileLocations.isNotEmpty()) {
                     property("locations") {
                         jsonObjectList(fileLocations) { location ->
@@ -123,8 +109,7 @@ class JsonProblemWriter(private val problem: Problem, private val failureDecorat
                     }
                 }
 
-                val id = problem.definition.id
-                property("problem") { writeStructuredMessage(StructuredMessage.forText(id.displayName)) }
+                property("problem") { writeStructuredMessage(StructuredMessage.forText(problem.definition.id.displayName)) }
                 property("severity", problem.definition.severity.toString().uppercase())
 
                 problem.details?.let {
@@ -140,7 +125,13 @@ class JsonProblemWriter(private val problem: Problem, private val failureDecorat
                 }
                 problem.definition.documentationLink?.let { property("documentationLink", it.url) }
                 problem.exception?.let { writeError(failureDecorator.decorate(failureFactory.create(it))) }
-                problemId(id)
+                property("problemId") {
+                    val list = generateSequence(problem.definition.id.group) { it.parent }.toList() + listOf(DefaultProblemGroup(problem.definition.id.name, problem.definition.id.displayName))
+                    jsonObjectList(list) { group ->
+                        property("name", group.name)
+                        property("displayName", group.displayName)
+                    }
+                }
 
                 val solutions = problem.solutions
                 if (solutions.isNotEmpty()) {

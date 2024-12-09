@@ -42,6 +42,7 @@ import org.gradle.internal.ImmutableActionSet;
 import org.gradle.internal.component.external.model.ModuleComponentGraphResolveStateFactory;
 import org.gradle.internal.component.model.DependencyMetadata;
 import org.gradle.internal.instantiation.InstantiatorFactory;
+import org.gradle.internal.reflect.Instantiator;
 import org.gradle.internal.resolve.resolver.ComponentMetaDataResolver;
 import org.gradle.internal.resolve.resolver.DependencyToComponentIdResolver;
 
@@ -57,7 +58,7 @@ public class DependencyGraphResolver {
     private final DependencyMetadataFactory dependencyMetadataFactory;
     private final VersionComparator versionComparator;
     private final VersionParser versionParser;
-    private final InstantiatorFactory instantiatorFactory;
+    private final Instantiator instantiator;
     private final ComponentSelectionDescriptorFactory componentSelectionDescriptorFactory;
     private final ModuleComponentGraphResolveStateFactory moduleResolveStateFactory;
     private final DependencyGraphBuilder dependencyGraphBuilder;
@@ -75,7 +76,7 @@ public class DependencyGraphResolver {
         this.dependencyMetadataFactory = dependencyMetadataFactory;
         this.versionComparator = versionComparator;
         this.versionParser = versionParser;
-        this.instantiatorFactory = instantiatorFactory;
+        this.instantiator = instantiatorFactory.decorateScheme().instantiator();
         this.componentSelectionDescriptorFactory = componentSelectionDescriptorFactory;
         this.moduleResolveStateFactory = moduleResolveStateFactory;
         this.dependencyGraphBuilder = dependencyGraphBuilder;
@@ -137,7 +138,7 @@ public class DependencyGraphResolver {
             return NO_OP;
         }
 
-        return new CachingDependencySubstitutionApplicator(new DefaultDependencySubstitutionApplicator(componentSelectionDescriptorFactory, dependencySubstitutionRule, instantiatorFactory));
+        return new CachingDependencySubstitutionApplicator(new DefaultDependencySubstitutionApplicator(componentSelectionDescriptorFactory, dependencySubstitutionRule, instantiator));
     }
 
     private ModuleConflictResolver<ComponentState> createModuleConflictResolver(ConflictResolution conflictResolution) {

@@ -104,7 +104,6 @@ abstract class DistributionIntegrationSpec extends AbstractIntegrationSpec {
         "persistent-cache",
         "problems",
         "problems-api",
-        "problems-rendering",
         "process-memory-services",
         "process-services",
         "resources",
@@ -140,7 +139,7 @@ abstract class DistributionIntegrationSpec extends AbstractIntegrationSpec {
      * Change this whenever you add or remove subprojects for distribution-packaged plugins (lib/plugins).
      */
     int getPackagedPluginsJarCount() {
-        81
+        82
     }
 
     /**

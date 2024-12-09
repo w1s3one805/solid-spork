@@ -28,8 +28,7 @@ public class DefaultProblem implements Serializable, Problem {
     private final ProblemDefinition problemDefinition;
     private final String contextualLabel;
     private final List<String> solutions;
-    private final List<ProblemLocation> originLocations;
-    private final List<ProblemLocation> contextualLocations;
+    private final List<ProblemLocation> problemLocations;
     private final String details;
     private final Throwable exception;
     private final AdditionalData additionalData;
@@ -38,8 +37,7 @@ public class DefaultProblem implements Serializable, Problem {
         ProblemDefinition problemDefinition,
         @Nullable String contextualLabel,
         List<String> solutions,
-        List<ProblemLocation> originLocations,
-        List<ProblemLocation> contextualLocations,
+        List<ProblemLocation> problemLocations,
         @Nullable String details,
         Throwable exception,
         @Nullable AdditionalData additionalData
@@ -47,8 +45,7 @@ public class DefaultProblem implements Serializable, Problem {
         this.problemDefinition = problemDefinition;
         this.contextualLabel = contextualLabel;
         this.solutions = solutions;
-        this.originLocations = originLocations;
-        this.contextualLocations = contextualLocations;
+        this.problemLocations = problemLocations;
         this.details = details;
         this.exception = exception;
         this.additionalData = additionalData;
@@ -77,13 +74,8 @@ public class DefaultProblem implements Serializable, Problem {
     }
 
     @Override
-    public List<ProblemLocation> getOriginLocations() {
-        return originLocations;
-    }
-
-    @Override
-    public List<ProblemLocation> getContextualLocations() {
-        return contextualLocations;
+    public List<ProblemLocation> getLocations() {
+        return problemLocations;
     }
 
     @Nullable
@@ -118,7 +110,7 @@ public class DefaultProblem implements Serializable, Problem {
         return equals(problemDefinition, that.problemDefinition) &&
             equals(contextualLabel, that.contextualLabel) &&
             equals(solutions, that.solutions) &&
-            equals(originLocations, that.originLocations) &&
+            equals(problemLocations, that.problemLocations) &&
             equals(details, that.details) &&
             equals(exception, that.exception) &&
             equals(additionalData, that.additionalData);

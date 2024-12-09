@@ -24,10 +24,13 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.configuration.LoggingConfiguration
 import org.gradle.api.logging.configuration.ShowStacktrace
+import org.gradle.api.problems.internal.Problem
+import org.gradle.api.problems.internal.ProblemAwareFailure
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.execution.MultipleBuildFailures
 import org.gradle.initialization.BuildClientMetaData
 import org.gradle.internal.enterprise.core.GradleEnterprisePluginManager
+import org.gradle.internal.exceptions.CompilationFailedIndicator
 import org.gradle.internal.exceptions.ContextAwareException
 import org.gradle.internal.exceptions.DefaultMultiCauseException
 import org.gradle.internal.exceptions.FailureResolutionAware
@@ -604,4 +607,19 @@ $GET_HELP
             super(MESSAGE)
         }
     }
+
+    class TestProblemAwareFailure extends Throwable implements CompilationFailedIndicator, ProblemAwareFailure {
+        List<Problem> problems
+
+        TestProblemAwareFailure(Problem... problems) {
+            super("<problem-bearing exception message>")
+            this.problems = Arrays.asList(problems)
+        }
+
+        @Override
+        Collection<Problem> getProblems() {
+            return problems
+        }
+    }
+
 }

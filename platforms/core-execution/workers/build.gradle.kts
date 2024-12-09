@@ -27,8 +27,6 @@ dependencies {
     api(libs.inject)
     api(libs.jsr305)
 
-    implementation(projects.fileTemp)
-    implementation(projects.processServices)
     implementation(projects.fileCollections)
     implementation(projects.fileOperations)
     implementation(projects.time)

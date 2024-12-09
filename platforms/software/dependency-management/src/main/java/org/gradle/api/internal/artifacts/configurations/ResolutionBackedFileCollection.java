@@ -27,19 +27,19 @@ import org.gradle.internal.component.resolution.failure.exception.ArtifactSelect
 import org.gradle.internal.logging.text.TreeFormatter;
 
 public class ResolutionBackedFileCollection extends AbstractFileCollection {
-
-    private final SelectedArtifactSet artifacts;
+    private final ResolutionResultProvider<SelectedArtifactSet> resultProvider;
     private final boolean lenient;
     private final ResolutionHost resolutionHost;
+    private SelectedArtifactSet selectedArtifacts;
 
     public ResolutionBackedFileCollection(
-        SelectedArtifactSet artifacts,
+        ResolutionResultProvider<SelectedArtifactSet> resultProvider,
         boolean lenient,
         ResolutionHost resolutionHost,
         TaskDependencyFactory taskDependencyFactory
     ) {
         super(taskDependencyFactory);
-        this.artifacts = artifacts;
+        this.resultProvider = resultProvider;
         this.lenient = lenient;
         this.resolutionHost = resolutionHost;
     }
@@ -54,8 +54,9 @@ public class ResolutionBackedFileCollection extends AbstractFileCollection {
 
     @Override
     public void visitDependencies(TaskDependencyResolveContext context) {
+        SelectedArtifactSet selected = resultProvider.getTaskDependencyValue();
         FailureCollectingTaskDependencyResolveContext collectingContext = new FailureCollectingTaskDependencyResolveContext(context);
-        artifacts.visitDependencies(collectingContext);
+        selected.visitDependencies(collectingContext);
         if (!lenient) {
             resolutionHost.consolidateFailures("dependencies", collectingContext.getFailures()).ifPresent(consolidatedFailure -> {
                 resolutionHost.reportProblems(consolidatedFailure);
@@ -72,7 +73,7 @@ public class ResolutionBackedFileCollection extends AbstractFileCollection {
     @Override
     protected void visitContents(FileCollectionStructureVisitor visitor) {
         ResolvedFileCollectionVisitor collectingVisitor = new ResolvedFileCollectionVisitor(visitor);
-        artifacts.visitFiles(collectingVisitor, lenient);
+        getSelectedArtifacts().visitFiles(collectingVisitor, lenient);
         maybeThrowResolutionFailures(collectingVisitor);
     }
 
@@ -92,7 +93,10 @@ public class ResolutionBackedFileCollection extends AbstractFileCollection {
         formatter.node("contains: " + getDisplayName());
     }
 
-    SelectedArtifactSet getArtifacts() {
-        return artifacts;
+    SelectedArtifactSet getSelectedArtifacts() {
+        if (selectedArtifacts == null) {
+            selectedArtifacts = resultProvider.getValue();
+        }
+        return selectedArtifacts;
     }
 }

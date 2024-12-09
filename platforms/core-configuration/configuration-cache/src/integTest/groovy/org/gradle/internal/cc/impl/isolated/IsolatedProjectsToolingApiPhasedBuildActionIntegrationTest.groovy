@@ -234,9 +234,7 @@ class IsolatedProjectsToolingApiPhasedBuildActionIntegrationTest extends Abstrac
         model2[1].message == "It works from project :a"
 
         and:
-        fixture.assertModelLoaded {
-            runsTasks = true
-        }
+        fixture.assertModelLoaded()
         outputDoesNotContain("creating model")
         result.ignoreBuildSrc.assertTasksExecuted(":a:thing")
     }

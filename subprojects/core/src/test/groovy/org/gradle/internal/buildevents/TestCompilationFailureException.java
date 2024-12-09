@@ -18,13 +18,5 @@ package org.gradle.internal.buildevents;
 
 import org.gradle.internal.exceptions.CompilationFailedIndicator;
 
-import javax.annotation.Nullable;
-
 class TestCompilationFailureException extends Exception implements CompilationFailedIndicator {
-
-    @Nullable
-    @Override
-    public String getDiagnosticCounts() {
-        return null;
-    }
 }

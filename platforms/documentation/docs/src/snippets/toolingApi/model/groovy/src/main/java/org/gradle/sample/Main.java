@@ -21,7 +21,8 @@ public class Main {
 
         connector.forProjectDirectory(new File("."));
 
-        try (ProjectConnection connection = connector.connect()) {
+        ProjectConnection connection = connector.connect();
+        try {
             // Load the model for the project
             GradleProject project = connection.getModel(GradleProject.class);
             System.out.println("Project: " + project.getName());
@@ -29,6 +30,9 @@ public class Main {
             for (Task task : project.getTasks()) {
                 System.out.println("    " + task.getName());
             }
+        } finally {
+            // Clean up
+            connection.close();
         }
     }
 }

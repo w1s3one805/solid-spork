@@ -83,6 +83,7 @@ public class DiagnosticToProblemListener implements DiagnosticListener<JavaFileO
 
         Problem reportedProblem = problemReporter.create(spec -> buildProblem(diagnostic, spec));
         problemsReported.add(reportedProblem);
+        problemReporter.report(reportedProblem);
     }
 
     /**

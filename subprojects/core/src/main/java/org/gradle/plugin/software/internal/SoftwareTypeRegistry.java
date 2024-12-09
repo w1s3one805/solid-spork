@@ -48,8 +48,5 @@ public interface SoftwareTypeRegistry {
      */
     Optional<SoftwareTypeImplementation<?>> implementationFor(Class<? extends Plugin<Project>> pluginClass);
 
-    /**
-     * Returns the schema for the registered software types.
-     */
     NamedDomainObjectCollectionSchema getSchema();
 }

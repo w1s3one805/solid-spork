@@ -50,9 +50,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 class TestOperationMapper implements BuildOperationMapper<ExecuteTestBuildOperationType.Details, DefaultTestDescriptor> {
-    private final TaskForTestEventTracker taskTracker;
+    private final TestTaskExecutionTracker taskTracker;
 
-    TestOperationMapper(TaskForTestEventTracker taskTracker) {
+    TestOperationMapper(TestTaskExecutionTracker taskTracker) {
         this.taskTracker = taskTracker;
     }
 

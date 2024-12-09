@@ -65,6 +65,7 @@ dependencies {
     implementation(projects.logging)
     implementation(projects.modelCore)
     implementation(projects.toolingApi)
+    implementation(projects.problemsRendering)
 
     api(libs.slf4jApi)
     implementation(libs.commonsLang)

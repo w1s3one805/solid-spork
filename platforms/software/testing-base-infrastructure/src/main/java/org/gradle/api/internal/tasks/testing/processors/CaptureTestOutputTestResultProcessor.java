@@ -24,7 +24,6 @@ import org.gradle.api.internal.tasks.testing.redirector.StandardOutputRedirector
 import org.gradle.api.internal.tasks.testing.redirector.TestOutputRedirector;
 import org.gradle.api.tasks.testing.TestFailure;
 import org.gradle.api.tasks.testing.TestOutputEvent;
-import org.gradle.internal.time.Clock;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,8 +38,8 @@ public class CaptureTestOutputTestResultProcessor implements TestResultProcessor
     private Object rootId;
     private Map<Object, Object> parents = new ConcurrentHashMap<Object, Object>();
 
-    public CaptureTestOutputTestResultProcessor(Clock clock, TestResultProcessor processor, StandardOutputRedirector outputRedirector) {
-        this(processor, new TestOutputRedirector(clock, processor, outputRedirector));
+    public CaptureTestOutputTestResultProcessor(TestResultProcessor processor, StandardOutputRedirector outputRedirector) {
+        this(processor, new TestOutputRedirector(processor, outputRedirector));
     }
 
     CaptureTestOutputTestResultProcessor(TestResultProcessor processor, TestOutputRedirector outputRedirector) {

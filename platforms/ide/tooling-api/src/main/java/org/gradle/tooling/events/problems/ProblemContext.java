@@ -43,24 +43,12 @@ public interface ProblemContext {
     Details getDetails();
 
     /**
-     * Returns the locations where the problem originated.
-     * <p>
-     * Might be empty if the origin is not known.
+     * Returns the locations associated with this problem.
      *
-     * @return the origin locations
-     * @since 8.12
+     * @return the locations
+     * @since 8.8
      */
-    List<Location> getOriginLocations();
-
-    /**
-     * Returns additional locations, which can help to understand the problem further.
-     * <p>
-     * Might be empty if there is no meaningful contextual information.
-     *
-     * @return the contextual locations
-     * @since 8.12
-     */
-    List<Location> getContextualLocations();
+    List<Location> getLocations();
 
     /**
      * Returns the list of solutions.

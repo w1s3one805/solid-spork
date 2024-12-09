@@ -20,7 +20,6 @@ import org.gradle.StartParameter;
 import org.gradle.api.internal.GradleInternal;
 import org.gradle.api.internal.tasks.execution.statistics.TaskExecutionStatisticsEventAdapter;
 import org.gradle.api.logging.Logging;
-import org.gradle.api.problems.internal.ExceptionProblemRegistry;
 import org.gradle.initialization.BuildRequestMetaData;
 import org.gradle.internal.buildevents.BuildLogger;
 import org.gradle.internal.buildevents.BuildLoggerFactory;
@@ -39,23 +38,19 @@ public class BuildOutcomeReportingBuildActionRunner implements BuildActionRunner
     private final BuildRequestMetaData buildRequestMetaData;
     private final StyledTextOutputFactory styledTextOutputFactory;
     private final BuildLoggerFactory buildLoggerFactory;
-    private final ExceptionProblemRegistry registry;
 
     public BuildOutcomeReportingBuildActionRunner(StyledTextOutputFactory styledTextOutputFactory,
                                                   ListenerManager listenerManager,
                                                   BuildActionRunner delegate,
                                                   BuildStartedTime buildStartedTime,
                                                   BuildRequestMetaData buildRequestMetaData,
-                                                  BuildLoggerFactory buildLoggerFactory,
-                                                  ExceptionProblemRegistry registry
-    ) {
+                                                  BuildLoggerFactory buildLoggerFactory) {
         this.styledTextOutputFactory = styledTextOutputFactory;
         this.listenerManager = listenerManager;
         this.delegate = delegate;
         this.buildStartedTime = buildStartedTime;
         this.buildRequestMetaData = buildRequestMetaData;
         this.buildLoggerFactory = buildLoggerFactory;
-        this.registry = registry;
     }
 
     @Override
@@ -70,7 +65,7 @@ public class BuildOutcomeReportingBuildActionRunner implements BuildActionRunner
 
         Result result = delegate.run(action, buildController);
 
-        buildLogger.logResult(result.getBuildFailure(), registry.getProblemLookup());
+        buildLogger.logResult(result.getBuildFailure());
         new TaskExecutionStatisticsReporter(styledTextOutputFactory).buildFinished(taskStatisticsCollector.getStatistics());
         return result;
     }

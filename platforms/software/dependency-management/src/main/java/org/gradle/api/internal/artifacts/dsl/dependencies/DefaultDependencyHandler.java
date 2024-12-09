@@ -324,7 +324,7 @@ public abstract class DefaultDependencyHandler implements DependencyHandlerInter
 
     @Override
     public ArtifactTypeContainer getArtifactTypes() {
-        return artifactTypeContainer.getArtifactTypeContainer();
+        return artifactTypeContainer.create();
     }
 
     @Override
