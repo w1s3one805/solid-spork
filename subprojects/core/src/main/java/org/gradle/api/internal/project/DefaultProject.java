@@ -125,9 +125,6 @@ import org.gradle.model.internal.registry.ModelRegistry;
 import org.gradle.model.internal.type.ModelType;
 import org.gradle.normalization.InputNormalizationHandler;
 import org.gradle.normalization.internal.InputNormalizationHandlerInternal;
-import org.gradle.plugin.software.internal.SoftwareFeatureApplicator;
-import org.gradle.plugin.software.internal.SoftwareFeaturesDynamicObject;
-import org.gradle.plugin.software.internal.SoftwareTypeRegistry;
 import org.gradle.process.ExecResult;
 import org.gradle.process.ExecSpec;
 import org.gradle.process.JavaExecSpec;
@@ -260,14 +257,12 @@ public abstract class DefaultProject extends AbstractPluginAware implements Proj
             services.get(InstantiatorFactory.class).decorateLenient(services)
         );
 
+
         @Nullable DynamicObject parentInherited = services.get(CrossProjectModelAccess.class).parentProjectDynamicInheritedScope(this);
         if (parentInherited != null) {
             extensibleDynamicObject.setParent(parentInherited);
         }
         extensibleDynamicObject.addObject(taskContainer.getTasksAsDynamicObject(), ExtensibleDynamicObject.Location.AfterConvention);
-
-        DynamicObject softwareFeaturesDynamicObject = new SoftwareFeaturesDynamicObject(getSoftwareTypeRegistry(), getSoftwareFeatureApplicator(), this);
-        extensibleDynamicObject.addObject(softwareFeaturesDynamicObject, ExtensibleDynamicObject.Location.BeforeConvention);
 
         evaluationListener.add(gradle.getProjectEvaluationBroadcaster());
 
@@ -1521,12 +1516,6 @@ public abstract class DefaultProject extends AbstractPluginAware implements Proj
 
     @Inject
     protected abstract ListenerBuildOperationDecorator getListenerBuildOperationDecorator();
-
-    @Inject
-    protected abstract SoftwareTypeRegistry getSoftwareTypeRegistry();
-
-    @Inject
-    protected abstract SoftwareFeatureApplicator getSoftwareFeatureApplicator();
 
     @Override
     public void addDeferredConfiguration(Runnable configuration) {

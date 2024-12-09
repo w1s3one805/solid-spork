@@ -35,7 +35,6 @@ import jetbrains.buildServer.configs.kotlin.Project
 import jetbrains.buildServer.configs.kotlin.RelativeId
 import jetbrains.buildServer.configs.kotlin.Requirements
 import jetbrains.buildServer.configs.kotlin.buildSteps.GradleBuildStep
-import jetbrains.buildServer.configs.kotlin.buildSteps.exec
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.failureConditions.BuildFailureOnText
 import jetbrains.buildServer.configs.kotlin.failureConditions.failOnText
@@ -76,10 +75,6 @@ fun Requirements.requiresArch(os: Os, arch: Arch) {
     } else {
         contains("teamcity.agent.jvm.os.arch", arch.nameOnLinuxWindows)
     }
-}
-
-fun Requirements.requiresEc2Agent() {
-    matches("teamcity.agent.name", "^(ec|EC)2-.*$")
 }
 
 fun Requirements.requiresNotEc2Agent() {
@@ -150,20 +145,6 @@ fun BuildType.applyDefaultSettings(os: Os = Os.LINUX, arch: Arch = Arch.AMD64, b
                 failureMessage = "This build might be leaking credentials"
                 reverse = false
                 stopBuildOnFailure = true
-            }
-        }
-    }
-
-    if (os !in listOf(Os.WINDOWS, Os.MACOS)) {
-        steps {
-            exec {
-                name = "CAPTURE_EC2_METADATA"
-                executionMode = BuildStep.ExecutionMode.ALWAYS
-                path = ".teamcity/scripts/ec2-metadata.sh"
-
-                conditions {
-                    requiresEc2Agent()
-                }
             }
         }
     }

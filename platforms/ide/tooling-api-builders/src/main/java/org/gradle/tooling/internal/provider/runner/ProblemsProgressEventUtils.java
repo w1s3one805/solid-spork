@@ -34,9 +34,9 @@ import org.gradle.api.problems.internal.PluginIdLocation;
 import org.gradle.api.problems.internal.Problem;
 import org.gradle.api.problems.internal.ProblemDefinition;
 import org.gradle.api.problems.internal.ProblemLocation;
-import org.gradle.api.problems.internal.ProblemSummaryData;
 import org.gradle.api.problems.internal.TaskPathLocation;
 import org.gradle.api.problems.internal.TypeValidationData;
+import org.gradle.internal.Pair;
 import org.gradle.internal.build.event.types.DefaultAdditionalData;
 import org.gradle.internal.build.event.types.DefaultContextualLabel;
 import org.gradle.internal.build.event.types.DefaultDetails;
@@ -103,9 +103,9 @@ public class ProblemsProgressEventUtils {
         );
     }
 
-    private static InternalProblemEventVersion2 createProblemSummaryEvent(OperationIdentifier buildOperationId, List<ProblemSummaryData> problemIdCounts, Supplier<OperationIdentifier> operationIdentifierSupplier) {
+    private static InternalProblemEventVersion2 createProblemSummaryEvent(OperationIdentifier buildOperationId, List<Pair<ProblemId, Integer>> problemIdCounts, Supplier<OperationIdentifier> operationIdentifierSupplier) {
         List<InternalProblemSummary> internalIdCounts = problemIdCounts.stream()
-            .map(it -> new DefaultProblemSummary(toInternalId(it.getProblemId()), it.getCount()))
+            .map(it -> new DefaultProblemSummary(toInternalId(it.left), it.right))
             .collect(toImmutableList());
         return new DefaultProblemEvent(
             createDefaultProblemDescriptor(buildOperationId, operationIdentifierSupplier),
@@ -132,8 +132,7 @@ public class ProblemsProgressEventUtils {
             toInternalDefinition(problem.getDefinition()),
             toInternalDetails(problem.getDetails()),
             toInternalContextualLabel(problem.getContextualLabel()),
-            toInternalLocations(problem.getOriginLocations()),
-            toInternalLocations(problem.getContextualLocations()),
+            toInternalLocations(problem.getLocations()),
             toInternalSolutions(problem.getSolutions()),
             toInternalAdditionalData(problem.getAdditionalData()),
             toInternalFailure(problem.getException())

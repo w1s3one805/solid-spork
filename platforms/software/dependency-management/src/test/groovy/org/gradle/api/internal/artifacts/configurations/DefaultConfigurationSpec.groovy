@@ -50,8 +50,7 @@ import org.gradle.api.internal.artifacts.dsl.PublishArtifactNotationParserFactor
 import org.gradle.api.internal.artifacts.dsl.dependencies.DependencyLockingProvider
 import org.gradle.api.internal.artifacts.ivyservice.TypedResolveException
 import org.gradle.api.internal.artifacts.ivyservice.moduleconverter.RootComponentMetadataBuilder
-import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.ArtifactVisitor
-import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.ResolvableArtifact
+import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.ResolvedFileVisitor
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.SelectedArtifactSet
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact.VisitedArtifactSet
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.results.DefaultVisitedGraphResults
@@ -68,11 +67,9 @@ import org.gradle.api.internal.project.ProjectStateRegistry
 import org.gradle.api.internal.tasks.TaskDependencyResolveContext
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.TaskDependency
-import org.gradle.internal.Describables
 import org.gradle.internal.Factories
 import org.gradle.internal.code.UserCodeApplicationContext
 import org.gradle.internal.component.external.model.DefaultModuleComponentIdentifier
-import org.gradle.internal.component.external.model.ImmutableCapabilities
 import org.gradle.internal.component.model.DependencyMetadata
 import org.gradle.internal.dispatch.Dispatch
 import org.gradle.internal.event.AnonymousListenerBroadcast
@@ -538,7 +535,7 @@ class DefaultConfigurationSpec extends Specification {
         _ * artifactTaskDependencies.getDependencies(_) >> requiredTasks
 
         and:
-        _ * resolver.resolveBuildDependencies(_, _) >> DefaultResolverResults.buildDependenciesResolved(Stub(VisitedGraphResults), visitedArtifactSet, Mock(ResolverResults.LegacyResolverResults))
+        _ * resolver.resolveBuildDependencies(_) >> DefaultResolverResults.buildDependenciesResolved(Stub(VisitedGraphResults), visitedArtifactSet, Mock(ResolverResults.LegacyResolverResults))
 
         expect:
         configuration.buildDependencies.getDependencies(targetTask) == requiredTasks
@@ -1121,7 +1118,7 @@ class DefaultConfigurationSpec extends Specification {
 
         then:
         config.state == UNRESOLVED
-        1 * resolver.resolveBuildDependencies(config, _) >> buildDependenciesResolved()
+        1 * resolver.resolveBuildDependencies(config) >> buildDependenciesResolved()
         0 * resolver._
     }
 
@@ -1160,7 +1157,7 @@ class DefaultConfigurationSpec extends Specification {
 
         then:
         config.state == UNRESOLVED
-        1 * resolver.resolveBuildDependencies(config, _) >> buildDependenciesResolved()
+        1 * resolver.resolveBuildDependencies(config) >> buildDependenciesResolved()
         0 * resolver._
 
         when:
@@ -1762,37 +1759,21 @@ class DefaultConfigurationSpec extends Specification {
     }
 
     private SelectedArtifactSet selectedArtifacts(Set<File> files = []) {
-        return new SelectedArtifactSet() {
-            @Override
-            void visitArtifacts(ArtifactVisitor visitor, boolean continueOnSelectionFailure) {
-                files.each { file ->
-                    visitor.visitArtifact(Describables.of(file.getName()), ImmutableAttributes.EMPTY, ImmutableCapabilities.EMPTY, resolvableArtifact(file))
+        Stub(SelectedArtifactSet) {
+            visitFiles(_, _) >> { ResolvedFileVisitor visitor, boolean l ->
+                files.each {
+                    visitor.visitFile(it)
                 }
                 visitor.endVisitCollection(null)
             }
-
-            @Override
-            void visitDependencies(TaskDependencyResolveContext context) { }
         }
     }
 
-    private ResolvableArtifact resolvableArtifact(file) {
-        Mock(ResolvableArtifact) {
-            getFile() >> file
-        }
-    }
-
-    private static SelectedArtifactSet selectedArtifacts(Throwable failure) {
-        return new SelectedArtifactSet() {
-            @Override
-            void visitArtifacts(ArtifactVisitor visitor, boolean continueOnSelectionFailure) {
-                visitor.visitFailure(failure)
-                visitor.endVisitCollection(null)
-            }
-
-            @Override
-            void visitDependencies(TaskDependencyResolveContext context) {
-                context.visitFailure(failure)
+    private SelectedArtifactSet selectedArtifacts(Throwable failure) {
+        Stub(SelectedArtifactSet) {
+            visitDependencies(_) >> { it[0].visitFailure(failure) }
+            visitFiles(_, _) >> { ResolvedFileVisitor v, boolean l ->
+                v.visitFailure(failure)
             }
         }
     }

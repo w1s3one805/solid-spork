@@ -19,31 +19,25 @@ import org.gradle.api.Action;
 import org.gradle.api.internal.artifacts.DependencySubstitutionInternal;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.result.ComponentSelectionDescriptorFactory;
 import org.gradle.internal.component.model.DependencyMetadata;
-import org.gradle.internal.instantiation.InstanceFactory;
-import org.gradle.internal.instantiation.InstantiatorFactory;
+import org.gradle.internal.reflect.Instantiator;
 
 public class DefaultDependencySubstitutionApplicator implements DependencySubstitutionApplicator {
     private final ComponentSelectionDescriptorFactory componentSelectionDescriptorFactory;
     private final Action<? super DependencySubstitutionInternal> rule;
-    private final InstanceFactory<DefaultDependencySubstitution> substitutionFactory;
+    private final Instantiator instantiator;
 
-    public DefaultDependencySubstitutionApplicator(
-        ComponentSelectionDescriptorFactory componentSelectionDescriptorFactory,
-        Action<? super DependencySubstitutionInternal> rule,
-        InstantiatorFactory instantiatorFactory
-    ) {
+    public DefaultDependencySubstitutionApplicator(ComponentSelectionDescriptorFactory componentSelectionDescriptorFactory, Action<? super DependencySubstitutionInternal> rule, Instantiator instantiator) {
         this.componentSelectionDescriptorFactory = componentSelectionDescriptorFactory;
         this.rule = rule;
-        this.substitutionFactory = instantiatorFactory.decorateScheme().forType(DefaultDependencySubstitution.class);
+        this.instantiator = instantiator;
     }
 
     @Override
     public SubstitutionResult apply(DependencyMetadata dependency) {
-        DependencySubstitutionInternal details = substitutionFactory.newInstance(
+        DependencySubstitutionInternal details = instantiator.newInstance(DefaultDependencySubstitution.class,
             componentSelectionDescriptorFactory,
             dependency.getSelector(),
-            dependency.getArtifacts()
-        );
+            dependency.getArtifacts());
         try {
             rule.execute(details);
         } catch (Exception e) {

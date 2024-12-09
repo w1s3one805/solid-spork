@@ -64,7 +64,7 @@ public class DefaultProblemBuilder implements InternalProblemBuilder {
         this.solutions = new ArrayList<String>(problem.getSolutions());
         this.severity = problem.getDefinition().getSeverity();
 
-        locations.addAll(problem.getOriginLocations());
+        locations.addAll(problem.getLocations());
 
         this.details = problem.getDetails();
         this.docLink = problem.getDefinition().getDocumentationLink();
@@ -94,16 +94,7 @@ public class DefaultProblemBuilder implements InternalProblemBuilder {
         }
 
         ProblemDefinition problemDefinition = new DefaultProblemDefinition(getId(), getSeverity(), docLink);
-        return new DefaultProblem(
-            problemDefinition,
-            contextualLabel,
-            solutions,
-            locations.build(),
-            ImmutableList.<ProblemLocation>of(),
-            details,
-            exceptionForProblemInstantiation,
-            additionalData
-        );
+        return new DefaultProblem(problemDefinition, contextualLabel, solutions, locations.build(), details, exceptionForProblemInstantiation, additionalData);
     }
 
     private void addLocationsFromProblemStream(ImmutableList.Builder<ProblemLocation> locations, Throwable exceptionForProblemInstantiation) {
@@ -141,7 +132,6 @@ public class DefaultProblemBuilder implements InternalProblemBuilder {
         return new DefaultProblem(problemDefinition, contextualLabel,
             ImmutableList.<String>of(),
             problemLocations.build(),
-            ImmutableList.<ProblemLocation>of(),
             null,
             exceptionForProblemInstantiation,
             null);

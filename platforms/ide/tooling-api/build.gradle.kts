@@ -66,7 +66,6 @@ dependencies {
     integTestImplementation(projects.persistentCache)
 
     crossVersionTestImplementation(projects.jvmServices)
-    crossVersionTestImplementation(projects.problems)
     crossVersionTestImplementation(testFixtures(projects.problemsApi))
     crossVersionTestImplementation(libs.jettyWebApp)
     crossVersionTestImplementation(libs.commonsIo)

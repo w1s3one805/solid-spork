@@ -30,23 +30,20 @@ import java.util.List;
 @NonNullApi
 public class DefaultProblemsOperationContext implements ProblemContext {
     private final Details details;
-    private final List<Location> originLocations;
-    private final List<Location> contextualLocations;
+    private final List<Location> locations;
     private final List<Solution> solutions;
     private final AdditionalData additionalData;
     private final Failure failure;
 
     public DefaultProblemsOperationContext(
         @Nullable Details details,
-        List<Location> originLocations,
-        List<Location> contextualLocations,
+        List<Location> locations,
         List<Solution> solutions,
         AdditionalData additionalData,
         @Nullable Failure failure
     ) {
         this.details = details;
-        this.originLocations = originLocations;
-        this.contextualLocations = contextualLocations;
+        this.locations = locations;
         this.solutions = solutions;
         this.additionalData = additionalData;
         this.failure = failure;
@@ -60,13 +57,8 @@ public class DefaultProblemsOperationContext implements ProblemContext {
 
 
     @Override
-    public List<Location> getOriginLocations() {
-        return originLocations;
-    }
-
-    @Override
-    public List<Location> getContextualLocations() {
-        return contextualLocations;
+    public List<Location> getLocations() {
+        return locations;
     }
 
     @Override

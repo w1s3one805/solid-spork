@@ -1114,11 +1114,7 @@ public class DefaultServiceRegistry implements CloseableServiceRegistry, Contain
             super(owner, accessScope, token, serviceTypes);
 
             if (implementationType.isInterface()) {
-                throw new ServiceValidationException(String.format("Cannot register an interface (%s) for construction.", implementationType.getCanonicalName()));
-            }
-
-            if (Modifier.isAbstract(implementationType.getModifiers())) {
-                throw new ServiceValidationException(String.format("Cannot register an abstract type (%s) for construction.", implementationType.getCanonicalName()));
+                throw new ServiceValidationException("Cannot register an interface for construction.");
             }
 
             validateImplementationForServiceTypes(serviceTypes, implementationType);

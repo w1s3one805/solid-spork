@@ -18,7 +18,6 @@ package org.gradle.plugin.software.internal
 
 import org.gradle.api.Plugin
 import org.gradle.api.internal.plugins.ExtensionContainerInternal
-import org.gradle.api.internal.plugins.PluginManagerInternal
 import org.gradle.api.internal.plugins.software.SoftwareType
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.tasks.properties.InspectionScheme
@@ -37,8 +36,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
     def problems = Mock(InternalProblems) {
         getAdditionalDataBuilderFactory() >> new AdditionalDataBuilderFactory()
     }
-    def pluginManager = Mock(PluginManagerInternal)
-    def applicator = new DefaultSoftwareFeatureApplicator(modelDefaultsApplicator, inspectionScheme, problems, pluginManager)
+    def applicator = new DefaultSoftwareFeatureApplicator(target, modelDefaultsApplicator, inspectionScheme, problems)
     def plugin = Mock(Plugin)
     def plugins = Mock(PluginContainer)
     def propertyWalker = Mock(PropertyWalker)
@@ -54,7 +52,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
 
         then:
         _ * softwareTypeImplementation.pluginClass >> plugin.class
-        1 * pluginManager.pluginContainer >> plugins
+        1 * target.plugins >> plugins
         1 * plugins.getPlugin(plugin.class) >> plugin
         1 * inspectionScheme.getPropertyWalker() >> propertyWalker
         1 * propertyWalker.visitProperties(plugin, _, _) >> { args -> args[2].visitSoftwareTypeProperty("foo", propertyValue, Foo.class, softwareType) }
@@ -77,7 +75,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
 
         then:
         _ * softwareTypeImplementation.pluginClass >> plugin.class
-        1 * pluginManager.pluginContainer >> plugins
+        1 * target.plugins >> plugins
         1 * plugins.getPlugin(plugin.class) >> plugin
         1 * inspectionScheme.getPropertyWalker() >> propertyWalker
         1 * propertyWalker.visitProperties(plugin, _, _) >> { args -> args[2].visitSoftwareTypeProperty("foo", propertyValue, Foo.class, softwareType) }
@@ -119,7 +117,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
 
         and:
         _ * softwareTypeImplementation.pluginClass >> plugin.class
-        1 * pluginManager.pluginContainer >> plugins
+        1 * target.plugins >> plugins
         1 * plugins.getPlugin(plugin.class) >> plugin
         1 * inspectionScheme.getPropertyWalker() >> propertyWalker
         1 * propertyWalker.visitProperties(plugin, _, _) >> { args -> args[2].visitSoftwareTypeProperty("foo", propertyValue, Foo.class, softwareType) }
@@ -147,7 +145,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
 
         and:
         _ * softwareTypeImplementation.pluginClass >> plugin.class
-        1 * pluginManager.pluginContainer >> plugins
+        1 * target.plugins >> plugins
         1 * plugins.getPlugin(plugin.class) >> plugin
         1 * inspectionScheme.getPropertyWalker() >> propertyWalker
         1 * propertyWalker.visitProperties(plugin, _, _) >> { args -> args[2].visitSoftwareTypeProperty("foo", propertyValue, Foo.class, softwareType) }
@@ -174,7 +172,7 @@ class DefaultSoftwareFeatureApplicatorTest extends Specification {
 
         and:
         _ * softwareTypeImplementation.pluginClass >> plugin.class
-        1 * pluginManager.pluginContainer >> plugins
+        1 * target.plugins >> plugins
         1 * plugins.getPlugin(plugin.class) >> plugin
         1 * inspectionScheme.getPropertyWalker() >> propertyWalker
         1 * propertyWalker.visitProperties(plugin, _, _) >> { args -> args[2].visitSoftwareTypeProperty("foo", propertyValue, Foo.class, softwareType) }

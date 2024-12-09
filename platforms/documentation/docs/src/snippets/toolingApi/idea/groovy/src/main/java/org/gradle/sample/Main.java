@@ -20,7 +20,8 @@ public class Main {
 
         connector.forProjectDirectory(new File("."));
 
-        try (ProjectConnection connection = connector.connect()) {
+        ProjectConnection connection = connector.connect();
+        try {
             IdeaProject project = connection.getModel(IdeaProject.class);
             System.out.println("***");
             System.out.println("Project details: ");
@@ -60,6 +61,9 @@ public class Main {
                     System.out.println("      * " + dependency);
                 }
             }
+        } finally {
+            // Clean up
+            connection.close();
         }
     }
 }

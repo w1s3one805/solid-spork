@@ -73,7 +73,7 @@ public class ToolingApiBuildEventListenerFactory implements BuildEventListenerFa
         OperationDependenciesResolver operationDependenciesResolver = new OperationDependenciesResolver();
 
         PluginApplicationTracker pluginApplicationTracker = new PluginApplicationTracker(ancestryTracker);
-        TaskForTestEventTracker testTaskTracker = new TaskForTestEventTracker(ancestryTracker);
+        TestTaskExecutionTracker testTaskTracker = new TestTaskExecutionTracker(ancestryTracker);
         ProjectConfigurationTracker projectConfigurationTracker = new ProjectConfigurationTracker(ancestryTracker, pluginApplicationTracker);
         TaskOriginTracker taskOriginTracker = new TaskOriginTracker(pluginApplicationTracker);
 

@@ -16,7 +16,6 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
-import org.gradle.api.internal.artifacts.VariantTransformRegistry;
 import org.gradle.api.internal.artifacts.transform.ArtifactVariantSelector;
 import org.gradle.api.internal.artifacts.transform.ResolvedVariantTransformer;
 import org.gradle.api.internal.artifacts.transform.TransformUpstreamDependenciesResolver;
@@ -35,7 +34,6 @@ public class ArtifactSelectionServices {
     private final VariantArtifactResolver variantResolver;
     private final GraphVariantSelector graphVariantSelector;
     private final ImmutableAttributesSchema consumerSchema;
-    private final VariantTransformRegistry transformRegistry;
 
     public ArtifactSelectionServices(
         ArtifactVariantSelector variantSelector,
@@ -43,15 +41,13 @@ public class ArtifactSelectionServices {
         TransformUpstreamDependenciesResolver dependenciesResolver,
         VariantArtifactResolver variantResolver,
         GraphVariantSelector graphVariantSelector,
-        ImmutableAttributesSchema consumerSchema,
-        VariantTransformRegistry transformRegistry
+        ImmutableAttributesSchema consumerSchema
     ) {
         this.variantSelector = variantSelector;
         this.resolvedVariantTransformer = new ResolvedVariantTransformer(transformedVariantFactory, dependenciesResolver);
         this.variantResolver = variantResolver;
         this.graphVariantSelector = graphVariantSelector;
         this.consumerSchema = consumerSchema;
-        this.transformRegistry = transformRegistry;
     }
 
     public ArtifactVariantSelector getArtifactVariantSelector() {
@@ -74,7 +70,4 @@ public class ArtifactSelectionServices {
         return consumerSchema;
     }
 
-    public VariantTransformRegistry getTransformRegistry() {
-        return transformRegistry;
-    }
 }

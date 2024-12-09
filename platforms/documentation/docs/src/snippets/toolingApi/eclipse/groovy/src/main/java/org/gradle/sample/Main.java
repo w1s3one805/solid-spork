@@ -22,7 +22,8 @@ public class Main {
 
         connector.forProjectDirectory(new File("."));
 
-        try (ProjectConnection connection = connector.connect()) {
+        ProjectConnection connection = connector.connect();
+        try {
             // Load the Eclipse model for the project
             EclipseProject project = connection.getModel(EclipseProject.class);
             System.out.println("Project: " + project.getName());
@@ -37,6 +38,9 @@ public class Main {
             }
             System.out.println("Associated gradle project:");
             System.out.println(project.getGradleProject());
+        } finally {
+            // Clean up
+            connection.close();
         }
     }
 }

@@ -16,16 +16,16 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
-import org.gradle.api.internal.attributes.immutable.artifact.ImmutableArtifactTypeRegistry;
+import org.gradle.api.internal.artifacts.type.ArtifactTypeRegistry;
 import org.gradle.internal.component.local.model.LocalFileDependencyMetadata;
 import org.gradle.internal.model.CalculatedValueContainerFactory;
 
 public class FileDependencyArtifactSet implements ArtifactSet {
     private final LocalFileDependencyMetadata fileDependency;
-    private final ImmutableArtifactTypeRegistry artifactTypeRegistry;
+    private final ArtifactTypeRegistry artifactTypeRegistry;
     private final CalculatedValueContainerFactory calculatedValueContainerFactory;
 
-    public FileDependencyArtifactSet(LocalFileDependencyMetadata fileDependency, ImmutableArtifactTypeRegistry artifactTypeRegistry, CalculatedValueContainerFactory calculatedValueContainerFactory) {
+    public FileDependencyArtifactSet(LocalFileDependencyMetadata fileDependency, ArtifactTypeRegistry artifactTypeRegistry, CalculatedValueContainerFactory calculatedValueContainerFactory) {
         this.fileDependency = fileDependency;
         this.artifactTypeRegistry = artifactTypeRegistry;
         this.calculatedValueContainerFactory = calculatedValueContainerFactory;
@@ -43,7 +43,6 @@ public class FileDependencyArtifactSet implements ArtifactSet {
             consumerServices.getArtifactVariantSelector(),
             artifactTypeRegistry,
             calculatedValueContainerFactory,
-            consumerServices.getTransformRegistry(),
             spec.getRequestAttributes(),
             spec.getAllowNoMatchingVariants()
         );

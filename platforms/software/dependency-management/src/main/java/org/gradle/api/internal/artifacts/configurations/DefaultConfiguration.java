@@ -112,7 +112,6 @@ import org.gradle.internal.deprecation.DeprecationLogger;
 import org.gradle.internal.event.ListenerBroadcast;
 import org.gradle.internal.logging.text.TreeFormatter;
 import org.gradle.internal.model.CalculatedModelValue;
-import org.gradle.internal.model.CalculatedValue;
 import org.gradle.internal.model.CalculatedValueContainerFactory;
 import org.gradle.internal.operations.BuildOperationContext;
 import org.gradle.internal.operations.BuildOperationDescriptor;
@@ -620,10 +619,8 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
             .nagUser();
 
         return new ResolutionBackedFileCollection(
-            new ResolutionResultProviderBackedSelectedArtifactSet(
-                resolutionAccess.getResults().map(resolverResults ->
-                    resolverResults.getLegacyResults().getLegacyVisitedArtifactSet().select(dependencySpec)
-                )
+            resolutionAccess.getResults().map(resolverResults ->
+                resolverResults.getLegacyResults().getLegacyVisitedArtifactSet().select(dependencySpec)
             ),
             false,
             getResolutionHost(),
@@ -687,7 +684,7 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
 
         @Override
         public ResolutionResultProvider<ResolverResults> getResults() {
-            return new ResolverResultsResolutionResultProvider();
+            return new ResolverResultsResolutionResultProvider(false);
         }
 
         @Override
@@ -707,8 +704,23 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
      */
     private class ResolverResultsResolutionResultProvider implements ResolutionResultProvider<ResolverResults> {
 
+        private final boolean strict;
+
+        /**
+         * @param strict Whether to fail if the configuration has not yet been resolved when the provider is queried.
+         */
+        public ResolverResultsResolutionResultProvider(boolean strict) {
+            this.strict = strict;
+        }
+
         @Override
         public ResolverResults getTaskDependencyValue() {
+            if (strict) {
+                return currentResolveState.get().orElseThrow(() ->
+                    new IllegalStateException("Cannot query results until resolution has happened.")
+                );
+            }
+
             if (getResolutionStrategy().resolveGraphToDetermineTaskDependencies()) {
                 // Force graph resolution as this is required to calculate build dependencies
                 return getValue();
@@ -719,9 +731,18 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
 
         @Override
         public ResolverResults getValue() {
+            if (strict) {
+                Optional<ResolverResults> currentState = currentResolveState.get();
+                if (!isFullyResoled(currentState)) {
+                    // Do not validate that the current thread holds the project lock.
+                    // TODO: Should instead assert that the results are available and fail if not.
+                    return resolveExclusivelyIfRequired();
+                }
+                return currentState.get();
+            }
+
             return resolveGraphIfRequired();
         }
-
     }
 
     private ResolverResults resolveGraphIfRequired() {
@@ -909,6 +930,16 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
     }
 
     @Override
+    public ResolutionResultProvider<ResolverResults> getResolverResults() {
+        return new ResolverResultsResolutionResultProvider(false);
+    }
+
+    @Override
+    public ResolutionResultProvider<ResolverResults> getStrictResolverResults() {
+        return new ResolverResultsResolutionResultProvider(true);
+    }
+
+    @Override
     public <T> T callAndResetResolutionState(Factory<T> factory) {
         warnOnInvalidInternalAPIUsage("callAndResetResolutionState()", ProperMethodUsage.RESOLVABLE);
         try {
@@ -932,19 +963,8 @@ public abstract class DefaultConfiguration extends AbstractFileCollection implem
         assertIsResolvable();
         return currentResolveState.update(initial -> {
             if (!initial.isPresent()) {
-
-                CalculatedValue<ResolverResults> futureCompleteResults = calculatedValueContainerFactory.create(Describables.of("Full results for", getName()), context -> {
-                    Optional<ResolverResults> currentState = currentResolveState.get();
-                    if (!isFullyResoled(currentState)) {
-                        // Do not validate that the current thread holds the project lock.
-                        // TODO: Should instead assert that the results are available and fail if not.
-                        return resolveExclusivelyIfRequired();
-                    }
-                    return currentState.get();
-                });
-
                 try {
-                    return Optional.of(resolver.resolveBuildDependencies(this, futureCompleteResults));
+                    return Optional.of(resolver.resolveBuildDependencies(this));
                 } catch (Exception e) {
                     throw exceptionMapper.mapFailure(e, "dependencies", displayName.getDisplayName());
                 }

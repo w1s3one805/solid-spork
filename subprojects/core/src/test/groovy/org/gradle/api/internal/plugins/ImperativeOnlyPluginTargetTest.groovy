@@ -20,11 +20,26 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.initialization.Settings
 import org.gradle.api.internal.project.ProjectInternal
-import org.gradle.util.TestUtil
+import org.gradle.api.problems.internal.DefaultProblems
+import org.gradle.api.problems.internal.ExceptionProblemRegistry
+import org.gradle.api.problems.internal.ProblemSummarizer
+import org.gradle.internal.operations.CurrentBuildOperationRef
+import org.gradle.internal.operations.OperationIdentifier
 import spock.lang.Specification
 
 class ImperativeOnlyPluginTargetTest extends Specification {
-    def problems = TestUtil.problemsService()
+
+    def problemEmitter = Mock(ProblemSummarizer)
+    def currentBuildOperationRef = Mock(CurrentBuildOperationRef) {
+        getId() >> new OperationIdentifier(42)
+    }
+    def problems = new DefaultProblems(
+        problemEmitter,
+        null,
+        currentBuildOperationRef,
+        new ExceptionProblemRegistry(),
+        null
+    )
 
     def "mismatched plugin application target is detected"() {
         def pluginTarget = new ImperativeOnlyPluginTarget(PluginTargetType.PROJECT, Mock(ProjectInternal), problems)
@@ -41,8 +56,7 @@ class ImperativeOnlyPluginTargetTest extends Specification {
         def e = thrown(IllegalArgumentException)
         e.message == "The plugin must be applied in a settings script (or to the Settings object), but was applied in a build script (or to the Project object)"
 
-        and:
-        problems.assertProblemEmittedOnce(_)
+        1 * problemEmitter.emit(_, _)
     }
 
     def "custom ClassCastExceptions are not replaced on apply"() {
@@ -60,8 +74,7 @@ class ImperativeOnlyPluginTargetTest extends Specification {
         def e = thrown(ClassCastException)
         e.message == "custom error"
 
-        and:
-        problems.assertProblemEmittedOnce(_)
+        0 * problemEmitter.emit(_, _)
     }
 
 }

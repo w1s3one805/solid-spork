@@ -155,15 +155,13 @@ public class TestEventSerializer {
 
         @Override
         public DefaultTestOutputEvent read(Decoder decoder) throws Exception {
-            long logTime = decoder.readLong();
             TestOutputEvent.Destination destination = destinationSerializer.read(decoder);
             String message = decoder.readString();
-            return new DefaultTestOutputEvent(logTime, destination, message);
+            return new DefaultTestOutputEvent(destination, message);
         }
 
         @Override
         public void write(Encoder encoder, DefaultTestOutputEvent value) throws Exception {
-            encoder.writeLong(value.getLogTime());
             destinationSerializer.write(encoder, value.getDestination());
             encoder.writeString(value.getMessage());
         }

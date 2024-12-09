@@ -66,7 +66,13 @@ class ConfigurationCacheFixture {
     void assertStateStored(HasBuildActions details) {
         assertHasStoreReason(details)
 
-        assertWorkGraphOrModelStored(details.runsTasks, details.createsModels, details.loadsOnStore)
+        assert details.runsTasks || details.createsModels
+        if (details.runsTasks) {
+            configurationCacheBuildOperations.assertStateStored(details.loadsOnStore)
+        }
+        if (details.createsModels) {
+            configurationCacheBuildOperations.assertModelStored()
+        }
 
         spec.postBuildOutputContains("Configuration cache entry ${details.storeAction}.")
 
@@ -90,7 +96,13 @@ class ConfigurationCacheFixture {
     void assertStateStoredWithProblems(HasBuildActions details, HasProblems problemDetails) {
         assertHasStoreReason(details)
 
-        assertStateStored(details)
+        assert details.runsTasks || details.createsModels
+        if (details.runsTasks) {
+            configurationCacheBuildOperations.assertStateStored(details.runsTasks)
+        }
+        if (details.createsModels) {
+            configurationCacheBuildOperations.assertModelStored()
+        }
 
         spec.result.assertHasPostBuildOutput("Configuration cache entry ${details.storeAction}.")
 
@@ -121,18 +133,13 @@ class ConfigurationCacheFixture {
             } else {
                 configurationCacheBuildOperations.assertStateStored(false)
             }
-        } else {
-            configurationCacheBuildOperations.assertNoWorkGraphOperations()
         }
-
         if (details.createsModels) {
             if (details.hasStoreFailure) {
                 configurationCacheBuildOperations.assertModelStoreFailed()
             } else {
                 configurationCacheBuildOperations.assertModelStored()
             }
-        } else {
-            configurationCacheBuildOperations.assertNoModelOperations()
         }
 
         def message = "Configuration cache entry ${details.storeAction}"
@@ -163,7 +170,13 @@ class ConfigurationCacheFixture {
     void assertStateRecreated(HasBuildActions details, HasInvalidationReason invalidationDetails) {
         assertHasRecreateReason(details, invalidationDetails)
 
-        assertWorkGraphOrModelStored(details.runsTasks, details.createsModels, details.runsTasks)
+        assert details.runsTasks || details.createsModels
+        if (details.runsTasks) {
+            configurationCacheBuildOperations.assertStateStored(details.runsTasks)
+        }
+        if (details.createsModels) {
+            configurationCacheBuildOperations.assertModelStored()
+        }
 
         spec.postBuildOutputContains("Configuration cache entry ${details.storeAction}.")
         assertHasNoProblems()
@@ -186,7 +199,13 @@ class ConfigurationCacheFixture {
     void assertStateRecreatedWithProblems(HasBuildActions details, HasInvalidationReason invalidationDetails, HasProblems problemDetails) {
         assertHasRecreateReason(details, invalidationDetails)
 
-        assertWorkGraphOrModelStored(details.runsTasks, details.createsModels, false)
+        assert details.runsTasks || details.createsModels
+        if (details.runsTasks) {
+            configurationCacheBuildOperations.assertStateStored(false)
+        }
+        if (details.createsModels) {
+            configurationCacheBuildOperations.assertModelStored()
+        }
 
         spec.postBuildOutputContains("Configuration cache entry ${details.storeAction}.")
         assertHasProblems(problemDetails)
@@ -207,15 +226,10 @@ class ConfigurationCacheFixture {
         spec.postBuildOutputContains("Configuration cache entry ${details.storeAction}.")
 
         assert details.runsTasks || details.createsModels
-        if (details.runsTasks) {
-            configurationCacheBuildOperations.assertStateLoaded()
-        } else {
-            configurationCacheBuildOperations.assertNoWorkGraphOperations()
-        }
-        if (details.createsModels) {
+        if (details.createsModels) { // if the model is loaded, work-graph is not loaded
             configurationCacheBuildOperations.assertModelLoaded()
-        } else {
-            configurationCacheBuildOperations.assertNoModelOperations()
+        } else if (details.runsTasks) {
+            configurationCacheBuildOperations.assertStateLoaded()
         }
 
         assertNothingConfigured()
@@ -238,25 +252,10 @@ class ConfigurationCacheFixture {
         spec.postBuildOutputContains("Configuration cache entry ${details.storeAction}.")
 
         configurationCacheBuildOperations.assertStateLoaded()
-        configurationCacheBuildOperations.assertNoModelOperations()
 
         assertNothingConfigured()
 
         assertHasProblems(details)
-    }
-
-    private void assertWorkGraphOrModelStored(boolean runsTasks, boolean createsModels, boolean loadAfterStore) {
-        assert runsTasks || createsModels
-        if (runsTasks) {
-            configurationCacheBuildOperations.assertStateStored(loadAfterStore)
-        } else {
-            configurationCacheBuildOperations.assertNoWorkGraphOperations()
-        }
-        if (createsModels) {
-            configurationCacheBuildOperations.assertModelStored()
-        } else {
-            configurationCacheBuildOperations.assertNoModelOperations()
-        }
     }
 
     private void assertHasProblems(HasProblems problemDetails) {

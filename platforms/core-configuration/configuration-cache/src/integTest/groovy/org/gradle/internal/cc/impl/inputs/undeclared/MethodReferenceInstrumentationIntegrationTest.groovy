@@ -29,13 +29,15 @@ class MethodReferenceInstrumentationIntegrationTest extends AbstractConfiguratio
 
     def "reference #reference is instrumented in java"() {
         given:
-        def classTemplate = { ownerKind, ownerName -> """
+        testDirectory.create {
+            createDir("buildSrc") {
+                file("src/main/java/MethodRefInputs.java") << """
                 import java.io.*;
                 import java.nio.file.*;
                 import java.util.*;
                 import java.util.function.*;
 
-                public $ownerKind $ownerName {
+                public class MethodRefInputs {
                     @FunctionalInterface
                     interface ThrowingFunction<T, R> {
                         R apply(T value) throws Exception;
@@ -49,27 +51,19 @@ class MethodReferenceInstrumentationIntegrationTest extends AbstractConfiguratio
                         $consumerStatement
                     }
 
-                    static String readIS(InputStream in) throws Exception {
+                    private static String readIS(InputStream in) throws Exception {
                         return new BufferedReader(new InputStreamReader(in, "UTF-8")).readLine();
                     }
                 }
-            """
-        }
-
-        testDirectory.create {
-            createDir("buildSrc") {
-                file("src/main/java/MethodRefInputsCls.java") << classTemplate("class", "MethodRefInputsCls")
-                file("src/main/java/MethodRefInputsInterface.java") << classTemplate("interface", "MethodRefInputsInterface")
+                """
             }
         }
 
         buildFile """
             tasks.register("echo") {
-                def value1 = MethodRefInputsCls.readInputWithReference(${input.expr})
-                def value2 = MethodRefInputsInterface.readInputWithReference(${input.expr})
+                def value = MethodRefInputs.readInputWithReference(${input.expr})
                 doLast {
-                    println("value1 = \$value1")
-                    println("value2 = \$value2")
+                    println("value = \$value")
                 }
             }
         """
@@ -78,8 +72,7 @@ class MethodReferenceInstrumentationIntegrationTest extends AbstractConfiguratio
         configurationCacheRun("echo", "-D${systemProperty().path}=${systemProperty().expectedValue}")
 
         then:
-        outputContains("value1 = ${input.expectedValue}")
-        outputContains("value2 = ${input.expectedValue}")
+        outputContains("value = ${input.expectedValue}")
 
         problems.assertResultHasProblems(result) {
             withInput("Build file 'build.gradle': ${input.expectedInput}")

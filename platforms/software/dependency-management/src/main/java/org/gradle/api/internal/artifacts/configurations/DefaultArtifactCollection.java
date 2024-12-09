@@ -43,7 +43,7 @@ public class DefaultArtifactCollection implements ArtifactCollectionInternal {
         this.lenient = lenient;
         this.result = calculatedValueFactory.create(resolutionHost.displayName("files"), () -> {
             ResolvedArtifactCollectingVisitor visitor = new ResolvedArtifactCollectingVisitor();
-            fileCollection.getArtifacts().visitArtifacts(visitor, lenient);
+            fileCollection.getSelectedArtifacts().visitArtifacts(visitor, lenient);
 
             Set<ResolvedArtifactResult> artifactResults = visitor.getArtifacts();
             Set<Throwable> failures = visitor.getFailures();
@@ -96,7 +96,7 @@ public class DefaultArtifactCollection implements ArtifactCollectionInternal {
     @Override
     public void visitArtifacts(ArtifactVisitor visitor) {
         // TODO - if already resolved, use the results
-        fileCollection.getArtifacts().visitArtifacts(visitor, lenient);
+        fileCollection.getSelectedArtifacts().visitArtifacts(visitor, lenient);
     }
 
     private void ensureResolved() {

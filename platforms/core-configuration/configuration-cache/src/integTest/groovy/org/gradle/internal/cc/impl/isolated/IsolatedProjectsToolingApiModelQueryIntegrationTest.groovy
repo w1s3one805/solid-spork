@@ -114,73 +114,26 @@ class IsolatedProjectsToolingApiModelQueryIntegrationTest extends AbstractIsolat
             }
         """
 
-        when: "requesting a model together with running a task"
+        when:
         withIsolatedProjects()
         fetchModel(SomeToolingModel, ":dummyTask")
 
-        then: "only relevant projects are configured, while work graph and the model are stored in cache"
+        then:
         fixture.assertModelStored {
-            runsTasks = true
             // TODO:isolated desired behavior
-//            projectsConfigured(":buildSrc", ":") // Note :a and :b were not configured
+//            projectsConfigured(":buildSrc", ":")
             projectsConfigured(":buildSrc", ":", ":a", ":b")
             modelsCreated(":")
         }
         outputContains("Configuration of dummyTask")
         outputContains("Execution of dummyTask")
 
-        when: "repeating the request"
+        when:
         withIsolatedProjects()
         fetchModel(SomeToolingModel, ":dummyTask")
 
-        then: "no projects are configured, work graph and the model are loaded, tasks are executed before the model is returned"
-        fixture.assertModelLoaded {
-            runsTasks = true
-        }
-        outputDoesNotContain("Configuration of dummyTask")
-        outputDoesNotContain("creating model")
-        outputContains("Execution of dummyTask")
-    }
-
-    def "can cache models with tasks using internal option"() {
-        given:
-        withSomeToolingModelBuilderPluginInBuildSrc()
-        settingsFile << """
-            include("a")
-            include("b")
-        """
-        buildFile << """
-            plugins.apply(my.MyPlugin)
-
-            tasks.register("dummyTask") {
-                println("Configuration of dummyTask")
-                doLast {
-                    println("Execution of dummyTask")
-                }
-            }
-        """
-
-        when: "requesting a model together with running a task"
-        withIsolatedProjects("-Dorg.gradle.internal.isolated-projects.configure-on-demand.tasks=true")
-        fetchModel(SomeToolingModel, ":dummyTask")
-
-        then: "only relevant projects are configured, while work graph and the model are stored in cache"
-        fixture.assertModelStored {
-            runsTasks = true
-            projectsConfigured(":buildSrc", ":") // Note :a and :b were not configured
-            modelsCreated(":")
-        }
-        outputContains("Configuration of dummyTask")
-        outputContains("Execution of dummyTask")
-
-        when: "repeating the request"
-        withIsolatedProjects("-Dorg.gradle.internal.isolated-projects.configure-on-demand.tasks=true")
-        fetchModel(SomeToolingModel, ":dummyTask")
-
-        then: "no projects are configured, work graph and the model are loaded, tasks are executed before the model is returned"
-        fixture.assertModelLoaded {
-            runsTasks = true
-        }
+        then:
+        fixture.assertModelLoaded()
         outputDoesNotContain("Configuration of dummyTask")
         outputDoesNotContain("creating model")
         outputContains("Execution of dummyTask")
@@ -213,7 +166,6 @@ class IsolatedProjectsToolingApiModelQueryIntegrationTest extends AbstractIsolat
         then:
         executed(":dummyTask")
         fixture.assertModelStored {
-            runsTasks = true
             projectsConfigured(":buildSrc", ":")
             modelsCreated(":")
         }
